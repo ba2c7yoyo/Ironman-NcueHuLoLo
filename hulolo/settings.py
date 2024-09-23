@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["d471-119-14-201-163.ngrok-free.app"]
+ALLOWED_HOSTS = ["127.0.0.1", "d471-119-14-201-163.ngrok-free.app"]
 
 
 # Application definition
@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'import_export',
+    'chatbot'
 ]
 
 MIDDLEWARE = [
