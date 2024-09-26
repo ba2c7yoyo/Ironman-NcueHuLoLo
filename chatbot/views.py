@@ -19,21 +19,20 @@ line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-def teacher_lists_flex_message_package(teacher_name, candidate_courses):
-    #引入 JSON 檔案
-    json_path = os.path.join(BASE_DIR, 
-        'chatbot', 'reply_course_list.json')
+def dynamic_flex_message_package(title_name, candidate_list, label_type):
+    # 引入 JSON 檔案
+    json_path = os.path.join(BASE_DIR, 'chatbot', 'reply_course_teacher_list.json')
     flex = json.load(open(json_path, 'r', encoding='utf-8'))    
 
-    # 設定標題為老師名稱
-    flex['body']['contents'][0]['text'] = f"{teacher_name}老師的哪堂課?"
+    # 設定標題為傳入的名稱 (可以是老師名或課程名)
+    flex['body']['contents'][0]['text'] = f"哪位老師的{title_name}?" if label_type == 'teacher' else f"{title_name}老師的哪堂課?"
 
-    #課程列表的選項用了十個顏色!
+    # 設定顏色列表
     colors = ['#F0C29E', '#A1DE95', '#F5C578', '#91D9C2', '#DFC493', 
-            '#F0C29E', '#A1DE95', '#F5C578', '#91D9C2', '#DFC493']
+              '#F0C29E', '#A1DE95', '#F5C578', '#91D9C2', '#DFC493']
 
-    # 根據上述顏色動態生成課程按鈕，而且是根據幾堂課就產生幾個按鈕~
-    for i, course in enumerate(candidate_courses, start=1):
+    # 根據傳入的 candidate_list 動態生成按鈕
+    for i, name in enumerate(candidate_list, start=1):
         button = {
             'type': 'box',
             'layout': 'vertical',
@@ -43,9 +42,9 @@ def teacher_lists_flex_message_package(teacher_name, candidate_courses):
                 'style': 'primary',
                 'action': {
                     'type': 'postback',
-                    'label': course,
-                    #注意! 這很重要，此處代表按鈕背後真正的資料
-                    'data': f"{teacher_name}-{course}" 
+                    'label': name,
+                    # 注意這裡的 data 格式，根據傳入的參數動態生成資料
+                    'data': f"{name}-{title_name}" if label_type == "teacher" else f"{title_name}-{name}" 
                 },
                 'color': colors[i-1],
                 'margin': 'xs',
@@ -60,7 +59,6 @@ def teacher_lists_flex_message_package(teacher_name, candidate_courses):
             'backgroundColor': colors[i-1]
         }
         flex['body']['contents'].append(button)
-
     return flex
 
 def flex_message_package(course_info):
@@ -99,20 +97,19 @@ def callback(request):
 
 # 處理訊息的事件
 @parser.add(MessageEvent, message=TextMessage)
-def handle_teacher_name_msg(event):    
+def handle_msg(event):    
     user_message = event.message.text  # 取得使用者發送的文字
     filtered_teacher = Course.objects.filter(teacher_name=user_message)
+    filtered_course = Course.objects.filter(course_name=user_message)
     if filtered_teacher.exists():
         teacher_name = user_message
-
         #values_list 是以陣列裝課程名稱
         #distinct 可以把可能重複的老師名做過濾
         candidate_courses = filtered_teacher.values_list(
         'course_name', flat=True).distinct()
-
         #稍後會製作這個漂亮的函式，先呼叫它
-        flex_message = teacher_lists_flex_message_package(
-        teacher_name, candidate_courses)
+        flex_message = dynamic_flex_message_package(
+        teacher_name, candidate_courses, label_type='course' )
 
         message = FlexSendMessage(
                             alt_text=f"{teacher_name} 老師的課程",
@@ -121,14 +118,32 @@ def handle_teacher_name_msg(event):
         line_bot_api.reply_message(
                     event.reply_token,
                     message)
-    else:
+        
+    elif filtered_course.exists():
+        course_name = user_message
+        #values_list 是以陣列裝課程名稱
+        #distinct 可以把可能重複的老師名做過濾
+        candidate_teachers = filtered_course.values_list(
+        'teacher_name', flat=True).distinct()
+        #稍後會製作這個漂亮的函式，先呼叫它
+        flex_message = dynamic_flex_message_package(
+        course_name, candidate_teachers, label_type='teacher')
+
+        message = FlexSendMessage(
+                            alt_text=f"{course_name} 的老師",
+                            contents=flex_message
+                        )
+        line_bot_api.reply_message(
+                    event.reply_token,
+                    message)              
+    else:    
         print("Empty")   
 
 @parser.add(PostbackEvent)
 def handle_postback(event):
     #取得使用者點按鈕時回傳的資料
     postback_data = event.postback.data
-
+    
     #還記得前面提及按鈕背後的資料嗎? 在這!
     #postback_data 格式為 "課程名稱-老師名稱"
     if "-" in postback_data:
