@@ -2,6 +2,14 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
+
+class CourseAlias(models.Model):
+    course_name = models.CharField(max_length=20, verbose_name="課名全稱")
+    alias = models.CharField(max_length=20, verbose_name="課程簡稱")
+
+    def __str__(self):
+        return self.alias
+    
 class Course(models.Model):
     class TypeInCourse(models.TextChoices):
         GENERAL = "GEN", _("通識課程")

@@ -101,6 +101,8 @@ def handle_msg(event):
     user_message = event.message.text  # 取得使用者發送的文字
     filtered_teacher = Course.objects.filter(teacher_name=user_message)
     filtered_course = Course.objects.filter(course_name=user_message)
+    filtered_course_alias = CourseAlias.objects.filter(alias=user_message)
+    
     if filtered_teacher.exists():
         teacher_name = user_message
         #values_list 是以陣列裝課程名稱
@@ -135,7 +137,34 @@ def handle_msg(event):
                         )
         line_bot_api.reply_message(
                     event.reply_token,
-                    message)              
+                    message)    
+        
+    elif filtered_course_alias.exists():
+        # 提取所有對應的課程名稱，這裡假設只需要第一個課程名稱
+        full_course_name = filtered_course_alias.values_list('course_name', flat=True).first()
+
+        # 根據課程名稱查詢對應的老師
+        filtered_course = Course.objects.filter(course_name=full_course_name).values_list(
+            'teacher_name', flat=True).distinct()
+
+        # 將查詢結果轉換為候選老師列表
+        candidate_teachers = list(filtered_course)
+
+        # 呼叫動態生成訊息的函式，顯示老師的選擇
+        flex_message = dynamic_flex_message_package(
+            full_course_name, candidate_teachers, label_type='teacher')
+
+        message = FlexSendMessage(
+            alt_text=f"{full_course_name} 的老師",
+            contents=flex_message
+        )
+
+        # 回覆訊息給使用者
+        line_bot_api.reply_message(
+            event.reply_token,
+            message
+        )
+        
     else:    
         print("Empty")   
 
