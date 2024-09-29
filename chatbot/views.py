@@ -7,17 +7,41 @@ from django.http import HttpResponseForbidden, HttpResponse
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import MessageEvent, PostbackEvent, TextMessage, TextSendMessage, ImageSendMessage, FlexSendMessage
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
-
+from django.core.paginator import Paginator
+from django.shortcuts import render
 import json
 from .models import *
 
 from pathlib import Path
 import os
+from django.core.paginator import Paginator
+from django.shortcuts import render
 
 parser = WebhookHandler(settings.LINE_CHANNEL_SECRET)
 line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def course_feedback(request):
+    query = request.GET.get('query', '')  # 取得搜尋參數
+
+    # 如果有搜尋條件，根據課名或老師過濾
+    if query:
+        all_feedback = Course.objects.filter(course_name__icontains=query) | Course.objects.filter(teacher_name__icontains=query)
+    else:
+        all_feedback = Course.objects.all().order_by('-last_updated_time')
+
+    # 使用 Paginator 進行分頁，每頁顯示 10 則評價
+    paginator = Paginator(all_feedback, 10)
+    page_number = request.GET.get('page')
+    feedback = paginator.get_page(page_number)
+
+    context = {
+        'feedback': feedback,
+    }
+    return render(request, 'course_feedback.html', context)
+
 
 def dynamic_flex_message_package(title_name, candidate_list, label_type):
     # 引入 JSON 檔案
