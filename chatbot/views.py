@@ -22,7 +22,25 @@ line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+def send_loading_animation(user_id):
+    url = "https://api.line.me/v2/bot/chat/loading/start"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {settings.LINE_CHANNEL_ACCESS_TOKEN}",
+    }
+    data = {
+        "chatId": user_id,
+        "loadingSeconds": 5  # 你可以修改這個秒數
+    }
 
+    # 發送 POST 請求到 LINE API
+    response = requests.post(url, json=data, headers=headers)
+    
+    if response.status_code == 202:
+        print("Loading animation sent successfully")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        
 def course_feedback(request):
     query = request.GET.get('query', '')  # 取得搜尋參數
 
@@ -123,11 +141,14 @@ def callback(request):
 @parser.add(MessageEvent, message=TextMessage)
 def handle_msg(event):    
     user_message = event.message.text  # 取得使用者發送的文字
+    user_id = event.source.user_id
     filtered_teacher = Course.objects.filter(teacher_name=user_message)
     filtered_course = Course.objects.filter(course_name=user_message)
     filtered_course_alias = CourseAlias.objects.filter(alias=user_message)
     
     if filtered_teacher.exists():
+        send_loading_animation(user_id)
+        
         teacher_name = user_message
         #values_list 是以陣列裝課程名稱
         #distinct 可以把可能重複的老師名做過濾
@@ -146,6 +167,8 @@ def handle_msg(event):
                     message)
         
     elif filtered_course.exists():
+        send_loading_animation(user_id)
+        
         course_name = user_message
         #values_list 是以陣列裝課程名稱
         #distinct 可以把可能重複的老師名做過濾
@@ -164,6 +187,8 @@ def handle_msg(event):
                     message)    
         
     elif filtered_course_alias.exists():
+        send_loading_animation(user_id)
+        
         # 提取所有對應的課程名稱，這裡假設只需要第一個課程名稱
         full_course_name = filtered_course_alias.values_list('course_name', flat=True).first()
 
@@ -196,6 +221,8 @@ def handle_msg(event):
 def handle_postback(event):
     #取得使用者點按鈕時回傳的資料
     postback_data = event.postback.data
+    user_id = event.source.user_id
+    send_loading_animation(user_id)
     
     #還記得前面提及按鈕背後的資料嗎? 在這!
     #postback_data 格式為 "課程名稱-老師名稱"

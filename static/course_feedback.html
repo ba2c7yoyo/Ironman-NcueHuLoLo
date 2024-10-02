@@ -104,25 +104,25 @@
                 </div>
             </div>
         </form>
-
+        
+        <!-- 使用 Django template tag 顯示最多十則評價 -->
         <div class="row">
-            <!-- 使用 Django template tag 顯示最多十則評價 -->
-            {% for review in feedback %}
+            {% for each_feedback in feedback %}
             <div class="col-md-4 mt-3 d-flex">
                 <div class="card mb-4 h-100">
                     <div class="card-header">
-                        {{ review.teacher_name }}-{{ review.course_name }}
+                        {{ each_feedback.teacher_name }}-{{ each_feedback.course_name }}
                     </div>
                     <div class="card-body">
 
                         <p class="card-text">
-                            {{ review.feedback_content|slice:":200"|linebreaksbr }}
-                            <span class="collapse" id="collapse-review-{{ forloop.counter }}">
-                                {{ review.feedback_content|slice:"200:"|linebreaksbr }}
+                            {{ each_feedback.feedback_content|slice:":200"|linebreaksbr }}
+                            <span class="collapse" id="collapse-each_feedback-{{ forloop.counter }}">
+                                {{ each_feedback.feedback_content|slice:"200:"|linebreaksbr }}
                         </p>
                         <button type="button" class="btn btn-sm btn-light" data-bs-toggle="collapse"
-                        href="#collapse-review-{{ forloop.counter }}" role="button" aria-expanded="false"
-                        aria-controls="collapse-review-{{ forloop.counter }}">
+                        href="#collapse-each_feedback-{{ forloop.counter }}" role="button" aria-expanded="false"
+                        aria-controls="collapse-each_feedback-{{ forloop.counter }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                             class="bi bi-arrows-expand" viewBox="0 0 16 16">
                             <path fill-rule="evenodd"
@@ -133,7 +133,7 @@
                     
 
                     <div class="card-footer text-muted">
-                        投稿：{{ review.submitter_name }} {{ review.last_updated_time }}
+                        投稿：{{ each_feedback.submitter_name }} {{ each_feedback.last_updated_time }}
                     </div>
                 </div>
             </div>
