@@ -115,6 +115,10 @@ def flex_message_package(course_info):
     flex['body']['contents'][0]['contents'][4]['contents'][1]['text'] = course_info['submitter_name']
     flex['footer']['contents'][0]['contents'][0]['text'] = f"{course_info['teacher_name']}-{course_info['course_name']}"
     flex['footer']['contents'][0]['contents'][1]['text'] = f"第{course_info['number']}則"
+    flex['footer']['contents'][1]['contents'][0]['contents'][0]['action']['uri'] = "https://google.com"
+    flex['footer']['contents'][1]['contents'][1]['contents'][0]['action']['uri'] = "https://google.com"
+    flex['footer']['contents'][1]['contents'][2]['contents'][0]['action']['text'] = f"{course_info['teacher_name']}-{course_info['course_name']}"
+    
 
     return flex
 
