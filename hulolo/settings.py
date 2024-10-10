@@ -14,6 +14,9 @@ from pathlib import Path
 import os 
 import dj_database_url
 
+def str_to_bool(value):
+    return value.lower() in ("true", "1", "yes")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -28,7 +31,7 @@ LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str_to_bool(os.getenv("DEBUG"))
 
 # ALLOWED_HOSTS = ["127.0.0.1", "a1fa-119-14-201-163.ngrok-free.app"]
 
