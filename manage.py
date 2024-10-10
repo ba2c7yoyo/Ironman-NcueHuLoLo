@@ -17,7 +17,13 @@ def main():
         ) from exc
     execute_from_command_line(sys.argv)
 
-
 if __name__ == '__main__':
-    dotenv.read_dotenv()
+    # 檢查環境變數來區分開發和生產環境
+    if os.getenv('DJANGO_ENV') == 'production':
+        print("PRODUCTION")
+    else:
+        # 如果不是生產環境，讀取 .env 文件
+        dotenv.read_dotenv()
+        print("DEV")
+
     main()
