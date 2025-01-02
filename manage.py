@@ -4,6 +4,8 @@ import os
 import sys
 import dotenv
 
+DJANGO_ENV = "development"
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hulolo.settings')
@@ -18,12 +20,11 @@ def main():
     execute_from_command_line(sys.argv)
 
 if __name__ == '__main__':
-    # 檢查環境變數來區分開發和生產環境
-    if os.getenv('DJANGO_ENV') == 'production':
-        print("PRODUCTION")
+    dotenv.read_dotenv('.env.common')
+    if DJANGO_ENV == 'production':
+        print("----PRODUCTION MODE----")
+        dotenv.read_dotenv('.env.production', override=True)
     else:
-        # 如果不是生產環境，讀取 .env 文件
-        dotenv.read_dotenv()
-        print("DEV")
-
+        print("----DEV MODE----")
+        dotenv.read_dotenv('.env.development', override=True)
     main()
