@@ -5,6 +5,6 @@
 
 聊天機器人連結: [https://lin.ee/SiSFT6V](https://lin.ee/SiSFT6V)
 
-網頁版評價查詢連結: [https://hulolo-1495b0761d74.herokuapp.com/](https://hulolo-1495b0761d74.herokuapp.com/)
+網頁版評價查詢連結: [https://ironman-example.ncuehulolo.idv.tw/](https://ironman-example.ncuehulolo.idv.tw/)
 
 這個專案包含透過 LINE Bot 聊天機器人系統以及網頁相關設計。使用 Python 3.12、Django、Bootstrap 5.3.3 框架開發，並遵循 Django 應用程式的典型結構。
